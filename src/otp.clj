@@ -7,20 +7,23 @@
   (totp (decode-data s)))
 
 (defn read-secret
-  []
-  (if-let [console (System/console)]
-    (if-let [secret (.readPassword console "Enter secret: " (object-array 0))]
-      (String. secret))
-    (read-line)))
+  ([]
+   (if-let [console (System/console)]
+     (read-secret console)
+     (read-line)))
+  ([console]
+   (if-let [secret (.readPassword console "Enter secret: " (object-array 0))]
+     (String. secret)
+     "")))
 
-(defn check-secret
-  [secret]
-  (if (every? (set "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ") secret)
-    secret
-    (binding [*out* *err*]
-      (println "Invalid secret, expecting base-32 string (only 0-9, A-Z)"))))
+(defn err
+  [s]
+  (binding [*out* *err*]
+    (println s)))
 
 (defn -main [& [s]]
-  (if-let [secret (check-secret (or s (read-secret)))]
-    (println (otp secret))
-    (System/exit 1)))
+  (try
+    (println (otp (or s (read-secret))))
+    (catch IllegalArgumentException e
+      (err "Secret key should be a base-32 string (A-Z, 2-7)")
+      (System/exit 1))))
