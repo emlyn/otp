@@ -1,0 +1,2 @@
+{:deps
+ {clj-otp {:mvn/version "0.1.3"}}}
